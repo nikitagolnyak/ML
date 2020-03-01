@@ -1,19 +1,26 @@
 import math
 
 
+def divide(a, b):
+    if a == 0.0:
+        return 0
+    elif b == 0.0:
+        return 1
+    return a / b
+
+
 def knn(X, q, k, distance):
     distances = []
     for i in range(len(X)):
         distances.append(distance(X[i], q))
-    distances = [i for i in distances if i > 0]
-    del distances[k + 1:]
+    distances.sort()
     return distances[k]
 
 
 def ManhattanDistance(X, U):
     dist = 0
     for i in range(len(X)):
-        dist = dist + math.fabs(X[i] - U[i])
+        dist = dist + abs(X[i] - U[i])
     return dist
 
 
@@ -25,10 +32,9 @@ def EuclidianDistance(X, U):
 
 
 def ChebyshevDistance(X, U):
-    dist = 0
+    dist = -1
     for i in range(len(X)):
-        if math.fabs(X[i] - U[i]) > dist:
-            dist = math.fabs(X[i] - U[i])
+        dist = max(dist, abs(X[i] - U[i]))
     return dist
 
 
@@ -36,11 +42,9 @@ def a_k(X, Y, q, kernel, distance, k):
     numerator = 0
     denominator = 0
     neighbours = knn(X, q, k, distance)
-    if neighbours == 0:
-        neighbours = 1
     for i in range(len(X)):
-        numerator = numerator + Y[i] * kernel(distance(q, X[i]) / neighbours)
-        denominator = denominator + kernel(distance(q, X[i]) / neighbours)
+        numerator = numerator + Y[i] * kernel(divide(distance(q, X[i]), neighbours))
+        denominator = denominator + kernel(divide(distance(q, X[i]), neighbours))
     if denominator == 0:
         alpha = 0
         return alpha
@@ -55,14 +59,13 @@ def a_h(X, Y, q, kernel, distance, h):
     if h == 0:
         return math.nan
     for i in range(len(X)):
-        numerator = numerator + Y[i] * kernel(distance(q, X[i]) / h)
-        denominator = denominator + kernel(distance(q, X[i]) / h)
+        numerator = numerator + Y[i] * kernel(divide(distance(q, X[i]), h))
+        denominator = denominator + kernel(divide(distance(q, X[i]), h))
     if denominator == 0:
         alpha = 0
         return alpha
     else:
-        alpha = numerator / denominator
-        return alpha
+        return divide(numerator, denominator)
 
 
 def get_distance_func(name):
@@ -75,59 +78,55 @@ def get_distance_func(name):
 
 
 def UniformKernel(u):
-    if math.fabs(u) >= 1:
+    if abs(u) >= 1:
         return 0
     else:
         return 1.0 / 2.0
 
 
 def TriangularKernel(u):
-    if math.fabs(u) > 1:
+    if abs(u) > 1:
         return 0
     else:
-        return 1 - math.fabs(u)
+        return 1 - abs(u)
 
 
 def EpanechnikovKernel(u):
-    if math.fabs(u) > 1:
+    if abs(u) > 1:
         return 0
     else:
-        return 0.75 * (1 - u * u)
+        return (3 / 4) * (1 - u ** 2)
 
 
 def QuarticKernel(u):
-    if math.fabs(u) > 1:
+    if abs(u) > 1:
         return 0
     else:
-        return (15 / 16) * math.pow(1 - u * u, 2)
+        return ((1 - u ** 2) ** 2) * 15 / 16
 
 
 def TriweightKernel(u):
-    if math.fabs(u) > 1:
+    if abs(u) > 1:
         return 0
     else:
-        return (35 / 32) * math.pow(1 - u * u, 3)
+        return ((1 - u ** 2) ** 3) * 35 / 32
 
 
 def TricubeKernel(u):
-    if math.fabs(u) > 1:
+    if abs(u) > 1:
         return 0
     else:
-        return (70 / 81) * math.pow(1 - math.pow(math.fabs(u), 3), 3)
+        return ((1 - abs(u ** 3)) ** 3) * 70 / 81
 
 
 def CosineKernel(u):
-    if math.fabs(u) > 1:
-        return 0
-    else:
-        return (math.pi / 4) * math.cos((math.pi / 2) * u)
-
+    return (math.pi / 4) * math.cos((math.pi / 2) * u)
 
 def get_kernel_func(name):
     if name == "uniform":
         return UniformKernel
     elif name == "gaussian":
-        return lambda u: math.exp(-0.5 * u * u) / math.sqrt(math.pi + math.pi)
+        return lambda u: (math.e ** (-0.5 * (u ** 2))) / math.sqrt(2 * math.pi)
     elif name == "triangular":
         return TriangularKernel
     elif name == "epanechnikov":
@@ -141,7 +140,9 @@ def get_kernel_func(name):
     elif name == "cosine":
         return CosineKernel
     elif name == "sigmoid":
-        return lambda u: (2 / math.pi) * (1 / (math.exp(u) + math.exp(-u)))
+        return lambda u: (2 / math.pi) * (1 / ((math.e ** u) + (math.e ** (-u))))
+    elif name == 'logistic':
+        return lambda u: 1 / ((math.e ** u) + 2 + (math.e ** (-u)))
 
 
 if __name__ == '__main__':
