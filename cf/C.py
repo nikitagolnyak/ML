@@ -45,6 +45,9 @@ def a_k(X, Y, q, kernel, distance, k):
     for i in range(len(X)):
         numerator = numerator + Y[i] * kernel(divide(distance(q, X[i]), neighbours))
         denominator = denominator + kernel(divide(distance(q, X[i]), neighbours))
+    if denominator == 0 and numerator == 0:
+        kernel = lambda x: x
+        return a_h(X, Y, q, kernel, distance, k)
     if denominator == 0:
         alpha = 0
         return alpha
@@ -61,6 +64,9 @@ def a_h(X, Y, q, kernel, distance, h):
     for i in range(len(X)):
         numerator = numerator + Y[i] * kernel(divide(distance(q, X[i]), h))
         denominator = denominator + kernel(divide(distance(q, X[i]), h))
+    if denominator == 0 and numerator == 0:
+        kernel = lambda x: x
+        return a_h(X, Y, q, kernel, distance, h)
     if denominator == 0:
         alpha = 0
         return alpha
@@ -78,55 +84,59 @@ def get_distance_func(name):
 
 
 def UniformKernel(u):
-    if abs(u) >= 1:
+    if math.fabs(u) >= 1:
         return 0
     else:
         return 1.0 / 2.0
 
 
 def TriangularKernel(u):
-    if abs(u) > 1:
+    if math.fabs(u) > 1:
         return 0
     else:
-        return 1 - abs(u)
+        return 1 - math.fabs(u)
 
 
 def EpanechnikovKernel(u):
-    if abs(u) > 1:
+    if math.fabs(u) > 1:
         return 0
     else:
-        return (3 / 4) * (1 - u ** 2)
+        return 0.75 * (1 - u * u)
 
 
 def QuarticKernel(u):
-    if abs(u) > 1:
+    if math.fabs(u) > 1:
         return 0
     else:
-        return ((1 - u ** 2) ** 2) * 15 / 16
+        return (15 / 16) * math.pow(1 - u * u, 2)
 
 
 def TriweightKernel(u):
-    if abs(u) > 1:
+    if math.fabs(u) > 1:
         return 0
     else:
-        return ((1 - u ** 2) ** 3) * 35 / 32
+        return (35 / 32) * math.pow(1 - u * u, 3)
 
 
 def TricubeKernel(u):
-    if abs(u) > 1:
+    if math.fabs(u) > 1:
         return 0
     else:
-        return ((1 - abs(u ** 3)) ** 3) * 70 / 81
+        return (70 / 81) * math.pow(1 - math.pow(math.fabs(u), 3), 3)
 
 
 def CosineKernel(u):
-    return (math.pi / 4) * math.cos((math.pi / 2) * u)
+    if math.fabs(u) > 1:
+        return 0
+    else:
+        return (math.pi / 4) * math.cos((math.pi / 2) * u)
+
 
 def get_kernel_func(name):
     if name == "uniform":
         return UniformKernel
     elif name == "gaussian":
-        return lambda u: (math.e ** (-0.5 * (u ** 2))) / math.sqrt(2 * math.pi)
+        return lambda u: math.exp(-0.5 * u * u) / math.sqrt(math.pi + math.pi)
     elif name == "triangular":
         return TriangularKernel
     elif name == "epanechnikov":

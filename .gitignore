@@ -1,2 +1,13 @@
 # Project exclude paths
 /venv/
+.idea
+
+example.log
+lab6.py
+lab06.py
+myconnutils.py
+first_labs
+
+__pycache__/
+cf/__pycache__/
+lab01/__pycache__/

@@ -1,6 +1,7 @@
 from sklearn.metrics import confusion_matrix
 
-from cf.Task03 import get_distance_func, get_kernel_func, knn
+from cf.C import get_distance_func, get_kernel_func
+from cf.Task03 import knn
 from lab01.one_hot import distances
 from lab01.task import kernels, a_h, Combination, f_measure, a_k
 

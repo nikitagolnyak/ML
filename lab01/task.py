@@ -6,8 +6,7 @@ from lab01.one_hot import *
 
 kernels = ["uniform", "gaussian", "triangular",
            "epanechnikov", "quartic", "triweight",
-           "tricube", "cosine", "sigmoid"]
-
+           "tricube", "cosine", "sigmoid", "logistic"]
 distances = ["manhattan", "euclidean", "chebyshev"]
 
 
@@ -16,11 +15,11 @@ class Combination:
         self.distance = distance
         self.kernel = kernel
         self.measure = measure
-        self.h = h
+        self.k = h
 
     def __str__(self):
         return self.distance + ' ' + self.kernel + ' ' \
-               + str(self.measure) + " k " + str(self.h)
+               + str(self.measure) + " h " + str(self.k)
 
 
 def a_h(X, Y, q, kernel, distance, h):
@@ -116,11 +115,13 @@ if __name__ == '__main__':
         df = df.join(one_hot)
         df = normalize(df).to_numpy()
         X, y = np.split(df, [-3], axis=1)
-        # use_a_k_one_hot(loo, df, X, y)
-        use_a_h_one_hot(loo, df, X, y)
+        use_a_k_one_hot(loo, df, X, y)
+        # use_a_h_one_hot(loo, df, X, y)
     else:
+        # df['class'] = pd.Categorical(df['class']).codes
         df = normalize(df).to_numpy()
         X, y = np.split(df, [-1], axis=1)
+        print(y)
         labels = np.unique(y, axis=1)
         use_a_k_normal(loo, df, X, y, labels)
         # use_a_h_normal(loo, df, X, y, labels)
