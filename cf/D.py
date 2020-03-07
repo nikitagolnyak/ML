@@ -25,23 +25,24 @@ def compute_coefficients(X, Y, n_epoch, W):
     Q = init_loss(X, Y, W)
     l_rate = 0.00001
     prev_error = math.inf
-    cur_W = list(W)
+    prev_W = list(W)
     while iter_num < n_epoch:
         random_ind = randint(0, len(X) - 1)
         x, y = X[random_ind], Y[random_ind]
-        y_pred = predict(x, cur_W)
+        y_pred = predict(x, prev_W)
         error = y_pred - y
         if prev_error != math.inf:
             if error > prev_error:
                 l_rate = l_rate / 0.5
-                cur_W = list(W)
+                prev_W = list(W)
             else:
                 l_rate = l_rate * 0.03
-                W = list(cur_W)
+                W = list(prev_W)
         Q_new = lm * error + (1 - lm) * Q
-        if abs(Q_new - Q) < 0.001: return W
+        if abs(Q_new - Q) < 0.00001:
+            return W
         for j in range(len(W)):
-            cur_W[j] = cur_W[j] - x[j] * l_rate * error
+            prev_W[j] = prev_W[j] - x[j] * l_rate * error
         prev_error = error
         Q = Q_new
         iter_num += 1
