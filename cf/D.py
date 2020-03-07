@@ -1,3 +1,4 @@
+import math
 import random
 from random import randint
 
@@ -7,28 +8,6 @@ def predict(row, W):
     for i in range(len(row)):
         y_pred += W[i] * row[i]
     return y_pred
-
-
-def stochastic_gradient_step_v(row, y_actual, W, Q, lam):
-    y_pred = predict(row, W)
-    error = y_pred - y_actual
-    Q_new = lam * error + (1 - lam) * Q
-    if abs(Q_new - Q) < 0.000001:
-        return W, Q, True
-    l_rate = 0.0
-    W_cur = [0] * len(W)
-    dx = 0
-    for i in range(len(W)):
-        W_cur[i] = row[i] * error
-        dx += row[i] * W_cur[i]
-    if dx != 0:
-        if error / dx > l_rate:
-            l_rate = error / dx
-    if l_rate == 0:
-        return W, Q_new, False
-    for j in range(len(W)):
-        W[j] = W[j] - l_rate * W_cur[j]
-    return W, Q, False
 
 
 def init_loss(X, Y, W):
@@ -42,12 +21,29 @@ def init_loss(X, Y, W):
 
 def compute_coefficients(X, Y, n_epoch, W):
     iter_num = 0
-    lam = 1 / len(X)
+    lm = 1 / len(X)
     Q = init_loss(X, Y, W)
+    l_rate = 0.00001
+    prev_error = math.inf
+    cur_W = list(W)
     while iter_num < n_epoch:
         random_ind = randint(0, len(X) - 1)
-        W, Q, stop = stochastic_gradient_step_v(X[random_ind], Y[random_ind], W, Q, lam)
-        if stop: return W
+        x, y = X[random_ind], Y[random_ind]
+        y_pred = predict(x, cur_W)
+        error = y_pred - y
+        if prev_error != math.inf:
+            if error > prev_error:
+                l_rate = l_rate / 0.5
+                cur_W = list(W)
+            else:
+                l_rate = l_rate * 0.03
+                W = list(cur_W)
+        Q_new = lm * error + (1 - lm) * Q
+        if abs(Q_new - Q) < 0.001: return W
+        for j in range(len(W)):
+            cur_W[j] = cur_W[j] - x[j] * l_rate * error
+        prev_error = error
+        Q = Q_new
         iter_num += 1
     return W
 
