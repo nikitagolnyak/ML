@@ -1,4 +1,3 @@
-import math
 import random
 from random import randint
 
@@ -23,27 +22,26 @@ def compute_coefficients(X, Y, n_epoch, W):
     iter_num = 0
     lm = 1 / len(X)
     Q = init_loss(X, Y, W)
-    l_rate = 0.00001
-    prev_error = math.inf
-    prev_W = list(W)
     while iter_num < n_epoch:
         random_ind = randint(0, len(X) - 1)
         x, y = X[random_ind], Y[random_ind]
-        y_pred = predict(x, prev_W)
+        y_pred = predict(x, W)
         error = y_pred - y
-        if prev_error != math.inf:
-            if error > prev_error:
-                l_rate = l_rate / 0.5
-                prev_W = list(W)
-            else:
-                l_rate = l_rate * 0.03
-                W = list(prev_W)
         Q_new = lm * error + (1 - lm) * Q
-        if abs(Q_new - Q) < 0.00001:
+        if abs(Q_new - Q) < 0.001:
             return W
+        l_rate = 0.0
+        dx = 0.0
         for j in range(len(W)):
-            prev_W[j] = prev_W[j] - x[j] * l_rate * error
-        prev_error = error
+            dx += x[j] * x[j] * error
+        if dx != 0:
+            cur_h = error / dx
+            if l_rate < cur_h:
+                l_rate = cur_h
+        if l_rate == 0:
+            continue
+        for i in range(len(W)):
+            W[i] = W[i] - l_rate * x[i] * error
         Q = Q_new
         iter_num += 1
     return W
