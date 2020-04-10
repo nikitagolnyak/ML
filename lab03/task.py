@@ -172,7 +172,7 @@ if __name__ == '__main__':
     le = LabelEncoder()
     y = le.fit_transform(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, stratify=y)
-    # compute_params()
+    compute_params()
     # startified_folds()
     # geyser_clf()
     chips_clf()
